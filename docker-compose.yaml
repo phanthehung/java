@@ -1,0 +1,108 @@
+version: '2.1'
+
+volumes: 
+  mysql_data: {}
+
+services:
+    purchase:
+        container_name: purchase
+        environment:
+            - MYSQL_DATABASE=jdbc:mysql://mydb:3306/purchase
+            - MYSQL_USER=root
+            - MYSQL_PASSWORD=local
+            - MYSQL_PORT=3306
+            - SQS_ENDPOINT=http://sqs:9324
+            - SQS_REGION=ap-southeast-1
+            - AWS_ACCESS_KEY_ID=awskey
+            - AWS_SECRET_KEY=awssecret
+            - CACHE_PASSWORD=root
+            - CACHE_PORT=6379
+            - CACHE_HOST=redis
+            - CACHE_TIMEOUT=20
+            - CACHE_IDLE=2
+            - CACHE_TOTAL=3
+            - VOUCHER_SERVICE_URL=voucher:8089
+        build:
+            context: ./purchase
+            dockerfile: ./Dockerfile
+        image: purchase:1.0
+        ports:
+            - 8088:8088
+        networks:
+            - nab_hungphan
+        depends_on:
+            - mydb
+
+    voucher:
+        container_name: voucher
+        environment:
+            - MYSQL_DATABASE=jdbc:mysql://mydb:3306/voucher
+            - MYSQL_USER=root
+            - MYSQL_PASSWORD=local
+            - MYSQL_PORT=3306
+            - SQS_ENDPOINT=http://sqs:9324
+            - SQS_REGION=ap-southeast-1
+            - AWS_ACCESS_KEY_ID=awskey
+            - AWS_SECRET_KEY=awssecret
+            - CACHE_PASSWORD=root
+            - CACHE_PORT=6379
+            - CACHE_HOST=redis
+            - CACHE_TIMEOUT=20
+            - CACHE_IDLE=2
+            - CACHE_TOTAL=3
+        build:
+            context: ./voucher
+            dockerfile: ./Dockerfile
+        image: voucher:1.0
+        ports:
+            - 8089:8089
+        networks:
+            - nab_hungphan
+        depends_on:
+            - mydb
+
+    redis:
+        image: redis:5.0-alpine
+        container_name: app_redis
+        command: redis-server --requirepass root
+        environment:
+            - REDIS_REPLICATION_MODE=master
+        ports:
+            - "6379:6379"
+        networks:
+            - nab_hungphan
+
+    sqs:
+        image: roribio16/alpine-sqs
+        container_name: sqs_queue
+        ports:
+            - 9324:9324
+            - 9325:9325
+        volumes:
+            - ./elasticmq.conf:/opt/elasticmq.conf
+            - ./sqs-insight.conf:/opt/sqs-insight.conf
+        networks:
+            - nab_hungphan
+
+    mydb:
+        image: 'mysql:8.0'
+        container_name: mydb
+        command: --default-authentication-plugin=mysql_native_password
+        environment:
+            - MYSQL_ROOT_PASSWORD=local
+        ports:
+            - 3306:3306
+        volumes:
+            - ./docker/provision/mysql/init:/docker-entrypoint-initdb.d:rw
+            - ./mysql_data_mydb:/var/lib/mysql:rw
+            
+        healthcheck:
+            test: "/usr/bin/mysql --user=root --password=local --execute \"SHOW DATABASES;\""
+            timeout: 10s
+            retries: 3
+        networks:
+            - nab_hungphan
+
+networks:
+    nab_hungphan:
+        driver: bridge
