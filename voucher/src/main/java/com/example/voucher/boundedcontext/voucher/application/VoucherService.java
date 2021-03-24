@@ -1,12 +1,12 @@
-package com.example.voucher.boundedcontext.voucher.domain;
+package com.example.voucher.boundedcontext.voucher.application;
 
 import com.example.voucher.boundedcontext.voucher.Event.VoucherCreationSuccessEvent;
-import com.example.voucher.boundedcontext.voucher.application.VoucherServiceInterface;
+import com.example.voucher.boundedcontext.voucher.domain.VoucherProviderInterface;
+import com.example.voucher.boundedcontext.voucher.domain.VoucherRepositoryInterface;
 import com.example.voucher.boundedcontext.voucher.domain.entity.Voucher;
 import com.example.voucher.boundedcontext.voucher.exception.RetryLimitException;
 import com.example.voucher.boundedcontext.voucher.exception.VoucherProcessingException;
 import com.example.voucher.boundedcontext.voucher.exception.VoucherStatusConflictException;
-import com.google.gson.Gson;
 import org.springframework.context.ApplicationEventPublisher;
 import org.springframework.transaction.annotation.Transactional;
 

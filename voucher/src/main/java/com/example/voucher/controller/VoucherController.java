@@ -4,7 +4,7 @@ import com.example.voucher.boundedcontext.voucher.application.VoucherServiceInte
 import com.example.voucher.boundedcontext.voucher.application.request.GenerateVoucherReq;
 import com.example.voucher.boundedcontext.voucher.application.response.VoucherGenerationResp;
 import com.example.voucher.boundedcontext.voucher.application.response.VoucherResp;
-import com.example.voucher.boundedcontext.voucher.domain.VoucherService;
+import com.example.voucher.boundedcontext.voucher.application.VoucherService;
 import com.example.voucher.boundedcontext.voucher.domain.entity.Voucher;
 import com.example.voucher.boundedcontext.voucher.exception.VoucherProcessingException;
 import com.example.voucher.boundedcontext.voucher.exception.VoucherStatusConflictException;

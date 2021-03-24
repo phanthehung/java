@@ -1,12 +1,12 @@
 package com.example.purchase.controller;
 
-import com.example.purchase.Util.RandomStringGenerator;
+import com.example.purchase.Util.UniqueStringGenerator;
 import com.example.purchase.boundedcontext.payment.CreditPaymentRequest;
 import com.example.purchase.boundedcontext.purchase.application.request.PurchaseVoucherReq;
 import com.example.purchase.boundedcontext.purchase.application.response.PurchaseVoucherResp;
-import com.example.purchase.boundedcontext.purchase.domain.PaymentServiceInterface;
-import com.example.purchase.boundedcontext.purchase.domain.PurchaseServiceInterface;
-import com.example.purchase.boundedcontext.purchase.domain.VoucherServiceInterface;
+import com.example.purchase.boundedcontext.purchase.application.PaymentServiceInterface;
+import com.example.purchase.boundedcontext.purchase.application.PurchaseServiceInterface;
+import com.example.purchase.boundedcontext.purchase.application.VoucherServiceInterface;
 import com.example.purchase.boundedcontext.purchase.domain.entity.Purchase;
 import com.example.purchase.boundedcontext.shared.cache.CacheInterface;
 import com.example.purchase.boundedcontext.shared.sms.SmsInterface;
@@ -37,12 +37,15 @@ public class PurchaseController {
 
     private CacheInterface cache;
 
-    public PurchaseController(PaymentServiceInterface paymentService, PurchaseServiceInterface purchaseService, VoucherServiceInterface voucherService, SmsInterface smsService, CacheInterface cache) {
+    private UniqueStringGenerator generator;
+
+    public PurchaseController(PaymentServiceInterface paymentService, PurchaseServiceInterface purchaseService, VoucherServiceInterface voucherService, SmsInterface smsService, CacheInterface cache, UniqueStringGenerator generator) {
         this.paymentService = paymentService;
         this.purchaseService = purchaseService;
         this.voucherService = voucherService;
         this.smsService = smsService;
         this.cache = cache;
+        this.generator = generator;
     }
 
     @PostMapping(value="/credit", produces = MediaType.APPLICATION_JSON_VALUE)
@@ -61,7 +64,7 @@ public class PurchaseController {
 
     @GetMapping(value = "token")
     public ResponseEntity<Void> sendToken(@RequestParam(name = "phone_number") String phoneNumber) {
-        String token = RandomStringGenerator.generateString(6);
+        String token = generator.generateString(6);
         cache.put(token, phoneNumber, 300);
         smsService.sendMessage(phoneNumber, "token: " + token);
         return new ResponseEntity<>(null, HttpStatus.ACCEPTED);

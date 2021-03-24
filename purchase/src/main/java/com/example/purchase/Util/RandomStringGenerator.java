@@ -2,9 +2,13 @@ package com.example.purchase.Util;
 
 import java.util.Random;
 
-public class RandomStringGenerator {
+public class RandomStringGenerator implements UniqueStringGenerator {
 
-    public static String generateString(int targetStringLength) {
+    public String generateString(int targetStringLength) {
+        return RandomStringGenerator.generate(targetStringLength);
+    }
+
+    private static String generate(int targetStringLength) {
         int leftLimit = 48; // numeral '0'
         int rightLimit = 122; // letter 'z'
         Random random = new Random();

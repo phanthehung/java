@@ -1,20 +1,22 @@
 package com.example.voucher.boundedcontext.shared.sms;
 
+import com.example.voucher.boundedcontext.shared.messagequeue.MessageQueueInterface;
 import org.springframework.stereotype.Component;
 
 @Component
 public class MockSmsService implements SmsInterface {
+
+
+    private MessageQueueInterface messageQueue;
+
+    public MockSmsService(MessageQueueInterface messageQueue) {
+        this.messageQueue = messageQueue;
+    }
+
     @Override
     public void sendMessage(String phoneNumber, String content) {
         String message = "phone number: " + phoneNumber + " | " + content;
-        System.out.println("-----------------------------------------------------------------");
-        System.out.println();
-        System.out.println();
-        System.out.println();
-        System.out.println(message);
-        System.out.println();
-        System.out.println();
-        System.out.println();
-        System.out.println("-----------------------------------------------------------------");
+        messageQueue.sendMessage("SMS_QUEUE", message);
+
     }
 }

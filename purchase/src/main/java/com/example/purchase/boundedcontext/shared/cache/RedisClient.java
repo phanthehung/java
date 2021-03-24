@@ -5,18 +5,17 @@ import redis.clients.jedis.Jedis;
 import redis.clients.jedis.JedisPool;
 
 
-public class RedisClient<T> implements CacheInterface<T> {
+public class RedisClient implements CacheInterface {
 
-    private Gson gson;
     private JedisPool jedisPool;
 
-    public RedisClient(Gson gson, JedisPool jedisPool) {
-        this.gson = gson;
+    public RedisClient(JedisPool jedisPool) {
         this.jedisPool = jedisPool;
     }
 
     @Override
-    public void put(String key, T object, int timeToLive) {
+    public void put(String key, Object object, int timeToLive) {
+        Gson gson = new Gson();
         String value = gson.toJson(object);
         try (Jedis jedis = jedisPool.getResource()) {
             jedis.set(key, value);
@@ -24,16 +23,18 @@ public class RedisClient<T> implements CacheInterface<T> {
         }
     }
 
+
     @Override
-    public T get(String key, Class<T> classOfT) {
+    public Object get(String key, Class classOfT) {
+        Gson gson = new Gson();
         try (Jedis jedis = jedisPool.getResource()) {
-            if(jedis.exists(key)) {
-                String value = jedis.get(key);
-                return gson.fromJson(value, classOfT);
+            if (jedis.exists(key)) {
+                return gson.fromJson(jedis.get(key), classOfT);
             }
             return null;
         }
     }
+
 
     @Override
     public void remove(String key) {

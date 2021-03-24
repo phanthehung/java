@@ -2,15 +2,16 @@ package com.example.purchase.boundedcontext.voucher;
 
 
 import com.example.purchase.boundedcontext.purchase.application.response.GenerateVoucherResp;
-import com.example.purchase.boundedcontext.purchase.domain.VoucherServiceInterface;
-import com.example.purchase.boundedcontext.purchase.exception.TimeoutException;
+import com.example.purchase.boundedcontext.purchase.application.VoucherServiceInterface;
 import com.example.purchase.boundedcontext.purchase.exception.VoucherCreationException;
 import com.example.purchase.boundedcontext.purchase.exception.VoucherProcessingException;
 import com.example.purchase.boundedcontext.shared.messagequeue.MessageQueueInterface;
 import com.google.gson.Gson;
 import com.google.gson.reflect.TypeToken;
+import org.springframework.beans.factory.annotation.Value;
 import org.springframework.http.*;
 import org.springframework.web.client.HttpStatusCodeException;
+import org.springframework.web.client.ResourceAccessException;
 import org.springframework.web.client.RestTemplate;
 
 import java.lang.reflect.Type;
@@ -19,6 +20,9 @@ import java.util.*;
 public class VoucherService implements VoucherServiceInterface {
 
     private static final String DELAYED_PURCHASE_QUEUE = "delayed_purchased_queue";
+
+    @Value("${domain.voucher}")
+    private String domain;
 
     private RestTemplate restTemplate;
 
@@ -31,9 +35,9 @@ public class VoucherService implements VoucherServiceInterface {
 
     @Override
     public String createVoucher(String transaction, double amount, String phoneNumber) throws VoucherCreationException, VoucherProcessingException {
-        String domain = System.getenv("VOUCHER_SERVICE_URL");
-        if (domain == null || domain.equals("")) {
-            domain = "localhost:8089";
+
+        if (System.getenv("VOUCHER_SERVICE_URL") != null && !System.getenv("VOUCHER_SERVICE_URL").equals("")) {
+            domain = System.getenv("VOUCHER_SERVICE_URL");
         }
 
         HttpHeaders headers = new HttpHeaders();
@@ -55,11 +59,13 @@ public class VoucherService implements VoucherServiceInterface {
                     String.class
             );
 
-            // for demo of timeout case only
-            Random rand = new Random();
-            int next = rand.nextInt(50);
-            if (next % 2 == 0) {
-                throw new TimeoutException();
+            if (System.getenv("TEST_TIMEOUT") != null && System.getenv("TEST_TIMEOUT").equals("yes")) {
+                // for demo of timeout case only
+                Random rand = new Random();
+                int next = rand.nextInt(50);
+                if (next % 2 == 0) {
+                    throw new ResourceAccessException("");
+                }
             }
 
             if (response.getStatusCode() == HttpStatus.ACCEPTED) {
@@ -70,7 +76,8 @@ public class VoucherService implements VoucherServiceInterface {
             return resp.getVoucherCode();
         } catch (HttpStatusCodeException e) {
             if (e.getStatusCode() != HttpStatus.CONFLICT) {
-                throw e;
+                this.delayCreateVoucher(transaction,phoneNumber, amount);
+                throw new VoucherProcessingException();
             }
             GenerateVoucherResp resp = gson.fromJson(e.getResponseBodyAsString(), GenerateVoucherResp.class);
             assert resp != null;
@@ -88,14 +95,9 @@ public class VoucherService implements VoucherServiceInterface {
             // http 202 in above code
             throw e;
         } catch (Exception e) {
-            HashMap<String, Object> message = new HashMap<>();
-            message.put("transaction", transaction);
-            message.put("phone_number", phoneNumber);
-            message.put("amount", amount);
-            messageQueue.sendMessage(DELAYED_PURCHASE_QUEUE, gson.toJson(message));
+            this.delayCreateVoucher(transaction,phoneNumber, amount);
             throw new VoucherProcessingException();
         }
-
     }
 
     @Override
@@ -105,19 +107,25 @@ public class VoucherService implements VoucherServiceInterface {
             domain = "localhost:8089";
         }
 
-        ResponseEntity<String> response = restTemplate.getForEntity(
-                "http://" + domain + "/voucher/list?phone_number=" + phoneNumber,
-                String.class
-        );
-
         Gson gson = new Gson();
         try {
-            Type type = new TypeToken<List<Voucher>>() {
-            }.getType();
-
+            ResponseEntity<String> response = restTemplate.getForEntity(
+                    "http://" + domain + "/voucher/list?phone_number=" + phoneNumber,
+                    String.class
+            );
+            Type type = new TypeToken<List<Voucher>>() {}.getType();
             return gson.fromJson(response.getBody(), type);
         } catch (HttpStatusCodeException e) {
             return new ArrayList<>();
         }
+    }
+
+    private void delayCreateVoucher(String transaction, String phoneNumber, double amount) {
+        Gson gson = new Gson();
+        HashMap<String, Object> message = new HashMap<>();
+        message.put("transaction", transaction);
+        message.put("phone_number", phoneNumber);
+        message.put("amount", amount);
+        messageQueue.sendMessage(DELAYED_PURCHASE_QUEUE, gson.toJson(message));
     }
 }

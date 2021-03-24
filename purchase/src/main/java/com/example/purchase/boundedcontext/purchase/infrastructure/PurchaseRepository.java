@@ -21,7 +21,7 @@ public class PurchaseRepository implements PurchaseRepositoryInterface {
     @Transactional
     public void persistPurchase(Purchase purchase) {
         LocalDateTime now = LocalDateTime.now();
-        entityManager.merge(purchase);
+        entityManager.persist(purchase);
         PurchaseHistory history = new PurchaseHistory(
                 purchase.getTransaction(),
                 purchase.getStatus().toString(),

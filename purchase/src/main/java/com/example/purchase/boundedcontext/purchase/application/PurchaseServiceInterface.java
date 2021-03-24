@@ -1,10 +1,10 @@
-package com.example.purchase.boundedcontext.purchase.domain;
+package com.example.purchase.boundedcontext.purchase.application;
 
 import com.example.purchase.boundedcontext.purchase.domain.entity.Purchase;
 import com.example.purchase.boundedcontext.purchase.exception.InvalidStateTransitionException;
-import com.example.purchase.boundedcontext.purchase.exception.TimeoutException;
 import com.example.purchase.boundedcontext.purchase.exception.VoucherCreationException;
 import com.example.purchase.boundedcontext.purchase.exception.VoucherProcessingException;
+import org.springframework.web.client.ResourceAccessException;
 
 import java.util.List;
 
@@ -20,7 +20,7 @@ public interface PurchaseServiceInterface {
 
     void movePurchaseToFailed(String transaction) throws InvalidStateTransitionException;
 
-    String createVoucher(String transaction) throws InvalidStateTransitionException, VoucherCreationException, VoucherProcessingException, TimeoutException;
+    String createVoucher(String transaction) throws InvalidStateTransitionException, VoucherCreationException, VoucherProcessingException, ResourceAccessException;
 
     List<Purchase> getPurchaseByPhoneNumber(String phoneNumber);
 }

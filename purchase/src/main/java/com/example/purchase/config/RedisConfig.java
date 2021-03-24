@@ -2,7 +2,6 @@ package com.example.purchase.config;
 
 import com.example.purchase.boundedcontext.shared.cache.CacheInterface;
 import com.example.purchase.boundedcontext.shared.cache.RedisClient;
-import com.google.gson.Gson;
 import org.springframework.beans.factory.annotation.Value;
 import org.springframework.context.annotation.Bean;
 import org.springframework.context.annotation.Configuration;
@@ -54,7 +53,7 @@ public class RedisConfig {
 
     @Bean
     public CacheInterface redisCache() {
-        return new RedisClient(new Gson(), getJedisPool());
+        return new RedisClient(getJedisPool());
     }
 
     private JedisPoolConfig getJedisPoolConfig() {

@@ -4,7 +4,7 @@ import com.example.voucher.Util.RandomStringGenerator;
 import com.example.voucher.boundedcontext.shared.messagequeue.MessageQueueInterface;
 import com.example.voucher.boundedcontext.voucher.application.request.VoucherGenerationRetryReq;
 import com.example.voucher.boundedcontext.voucher.domain.VoucherProviderInterface;
-import com.example.voucher.boundedcontext.voucher.domain.VoucherService;
+import com.example.voucher.boundedcontext.voucher.application.VoucherService;
 import com.example.voucher.boundedcontext.voucher.exception.TimeoutException;
 import com.google.gson.Gson;
 

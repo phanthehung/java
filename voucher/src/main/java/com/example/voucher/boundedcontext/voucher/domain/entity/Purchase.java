@@ -19,6 +19,12 @@ public class Purchase {
     @JsonProperty("amount")
     private double amount;
 
+    public Purchase(String phoneNumber, String transaction, double amount) {
+        this.phoneNumber = phoneNumber;
+        this.transaction = transaction;
+        this.amount = amount;
+    }
+
     public String getPhoneNumber() {
         return phoneNumber;
     }

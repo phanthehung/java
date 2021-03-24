@@ -1,13 +1,14 @@
 package com.example.purchase.boundedcontext.payment;
 
-import com.example.purchase.boundedcontext.purchase.domain.PaymentServiceInterface;
+import com.example.purchase.boundedcontext.purchase.application.PaymentServiceInterface;
 import com.google.gson.Gson;
+
+import java.io.UnsupportedEncodingException;
 
 public class PaymentService implements PaymentServiceInterface {
     @Override
-    public String getCreditPaymentProviderUrl(CreditPaymentRequest request) {
-
-        return "payment.com?callback=/callback/voucher/credit?payload=" + this.encryptPaymentPayload(request);
+    public String getCreditPaymentProviderUrl(CreditPaymentRequest request) throws UnsupportedEncodingException {
+        return "{\"transaction\" : \"" + request.getTransaction() +"\",\"phone_number\": \"1233\",\"success\": true,\"amount\" : " + request.getAmount() +"}";
     }
 
     @Override

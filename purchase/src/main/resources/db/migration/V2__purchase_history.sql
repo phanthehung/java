@@ -3,5 +3,7 @@ CREATE TABLE `purchase_history` (
   `status` varchar(10) DEFAULT NULL,
   `time` datetime(6) DEFAULT NULL,
   `transaction` varchar(100) DEFAULT NULL,
-  PRIMARY KEY (`id_purchase_history`)
+  PRIMARY KEY (`id_purchase_history`),
+  KEY `transaction_purchase_transaction` (`transaction`),
+  CONSTRAINT `transaction_purchase_transaction` FOREIGN KEY (`transaction`) REFERENCES `purchase` (`transaction`)
 ) ENGINE=InnoDB DEFAULT CHARSET=utf8;

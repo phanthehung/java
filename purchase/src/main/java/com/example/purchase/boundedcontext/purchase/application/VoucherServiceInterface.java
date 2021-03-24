@@ -1,4 +1,4 @@
-package com.example.purchase.boundedcontext.purchase.domain;
+package com.example.purchase.boundedcontext.purchase.application;
 
 import com.example.purchase.boundedcontext.purchase.exception.VoucherCreationException;
 import com.example.purchase.boundedcontext.purchase.exception.VoucherProcessingException;

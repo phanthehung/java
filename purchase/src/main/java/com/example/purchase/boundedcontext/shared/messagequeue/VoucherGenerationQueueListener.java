@@ -1,7 +1,7 @@
 package com.example.purchase.boundedcontext.shared.messagequeue;
 
 import com.example.purchase.boundedcontext.purchase.application.response.GenerateVoucherResp;
-import com.example.purchase.boundedcontext.purchase.domain.PurchaseServiceInterface;
+import com.example.purchase.boundedcontext.purchase.application.PurchaseServiceInterface;
 import com.example.purchase.boundedcontext.purchase.exception.InvalidStateTransitionException;
 import com.google.gson.Gson;
 import org.springframework.cloud.aws.messaging.listener.SqsMessageDeletionPolicy;
@@ -11,11 +11,9 @@ import org.springframework.stereotype.Component;
 @Component
 public class VoucherGenerationQueueListener {
 
-    private static final String RESPONSE_VOUCHER_GENERATION = "response_voucher_generation";
+    public static final String RESPONSE_VOUCHER_GENERATION = "response_voucher_generation";
 
-
-
-    PurchaseServiceInterface purchaseService;
+    private PurchaseServiceInterface purchaseService;
 
     public VoucherGenerationQueueListener(PurchaseServiceInterface purchaseService) {
         this.purchaseService = purchaseService;

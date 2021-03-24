@@ -107,15 +107,6 @@ public class Purchase {
     public Purchase() {
     }
 
-    public Purchase(Integer id, String phoneNumber, String transaction, String creditCardNumber, double amount, Status status) {
-        this.id = id;
-        this.phoneNumber = phoneNumber;
-        this.transaction = transaction;
-        this.creditCardNumber = creditCardNumber;
-        this.amount = amount;
-        this.status = status;
-    }
-
     public Purchase(String phoneNumber, String transaction, String creditCardNumber, double amount, Status status) {
         this.phoneNumber = phoneNumber;
         this.transaction = transaction;

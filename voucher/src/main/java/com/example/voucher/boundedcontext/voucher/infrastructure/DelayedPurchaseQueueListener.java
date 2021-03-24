@@ -4,13 +4,14 @@ import com.example.voucher.boundedcontext.voucher.application.VoucherServiceInte
 import com.example.voucher.boundedcontext.voucher.application.request.VoucherGenerationRetryReq;
 import com.example.voucher.boundedcontext.voucher.application.response.VoucherGenerationResp;
 import com.example.voucher.boundedcontext.shared.messagequeue.MessageQueueInterface;
-import com.example.voucher.boundedcontext.voucher.domain.VoucherService;
+import com.example.voucher.boundedcontext.voucher.application.VoucherService;
 import com.example.voucher.boundedcontext.voucher.domain.entity.Purchase;
 import com.example.voucher.boundedcontext.voucher.domain.entity.Voucher;
 import com.example.voucher.boundedcontext.voucher.exception.RetryLimitException;
 import com.example.voucher.boundedcontext.voucher.exception.VoucherProcessingException;
 import com.example.voucher.boundedcontext.voucher.exception.VoucherStatusConflictException;
 import com.google.gson.Gson;
+import org.springframework.cloud.aws.messaging.listener.Acknowledgment;
 import org.springframework.cloud.aws.messaging.listener.SqsMessageDeletionPolicy;
 import org.springframework.cloud.aws.messaging.listener.annotation.SqsListener;
 import org.springframework.stereotype.Component;
@@ -18,8 +19,8 @@ import org.springframework.stereotype.Component;
 @Component
 public class DelayedPurchaseQueueListener {
 
-    private static final String DELAYED_PURCHASE_QUEUE = "delayed_purchased_queue";
-    private static final String RESPONSE_VOUCHER_GENERATION = "response_voucher_generation";
+    public static final String DELAYED_PURCHASE_QUEUE = "delayed_purchased_queue";
+    public static final String RESPONSE_VOUCHER_GENERATION = "response_voucher_generation";
 
     private VoucherServiceInterface voucherService;
     private MessageQueueInterface messageQueue;
@@ -48,7 +49,7 @@ public class DelayedPurchaseQueueListener {
             } else if (e.getVoucher().getStatus() == Voucher.Status.success) {
                 messageQueue.sendMessage(
                         RESPONSE_VOUCHER_GENERATION,
-                        gson.toJson(new VoucherGenerationResp(purchase.getTransaction(), "", VoucherService.RESPONSE_SUCCESS))
+                        gson.toJson(new VoucherGenerationResp(purchase.getTransaction(), e.getVoucher().getVoucherCode(), VoucherService.RESPONSE_SUCCESS))
                 );
             }
         } catch (VoucherProcessingException ignored) {
@@ -56,8 +57,8 @@ public class DelayedPurchaseQueueListener {
         }
     }
 
-    @SqsListener(value = VoucherService.VOUCHER_GENERATION_RETRY_QUEUE, deletionPolicy = SqsMessageDeletionPolicy.ON_SUCCESS)
-    public void retryCreateVoucher(String message) throws VoucherProcessingException {
+    @SqsListener(value = VoucherService.VOUCHER_GENERATION_RETRY_QUEUE, deletionPolicy = SqsMessageDeletionPolicy.NEVER)
+    public void retryCreateVoucher(Acknowledgment acknowledgment, String message) throws VoucherProcessingException {
         Gson gson = new Gson();
         VoucherGenerationRetryReq voucher = gson.fromJson(message, VoucherGenerationRetryReq.class);
         try {
@@ -66,11 +67,15 @@ public class DelayedPurchaseQueueListener {
                     RESPONSE_VOUCHER_GENERATION,
                     gson.toJson(new VoucherGenerationResp(voucher.getTransaction(), voucherCode, VoucherService.RESPONSE_SUCCESS))
             );
+            acknowledgment.acknowledge();
         } catch (RetryLimitException e) {
             messageQueue.sendMessage(
                     RESPONSE_VOUCHER_GENERATION,
                     gson.toJson(new VoucherGenerationResp(voucher.getTransaction(), "", VoucherService.RESPONSE_FAILED))
             );
+            acknowledgment.acknowledge();
+        } catch (VoucherProcessingException e) {
+            // ignore this exception, process message again
         }
     }
 }

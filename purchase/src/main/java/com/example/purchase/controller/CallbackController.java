@@ -2,8 +2,8 @@ package com.example.purchase.controller;
 
 import com.example.purchase.boundedcontext.purchase.application.request.PurchaseCallbackCreditPayload;
 import com.example.purchase.boundedcontext.purchase.application.response.PurchaseCallbackCreditResp;
-import com.example.purchase.boundedcontext.purchase.domain.PaymentServiceInterface;
-import com.example.purchase.boundedcontext.purchase.domain.PurchaseServiceInterface;
+import com.example.purchase.boundedcontext.purchase.application.PaymentServiceInterface;
+import com.example.purchase.boundedcontext.purchase.application.PurchaseServiceInterface;
 import com.example.purchase.boundedcontext.purchase.exception.InvalidStateTransitionException;
 import com.example.purchase.boundedcontext.purchase.exception.VoucherProcessingException;
 import com.google.gson.Gson;

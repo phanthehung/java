@@ -32,6 +32,8 @@ services:
             - nab_hungphan
         depends_on:
             - mydb
+            - redis
+            - sqs
 
     voucher:
         container_name: voucher
@@ -60,6 +62,30 @@ services:
             - nab_hungphan
         depends_on:
             - mydb
+            - redis
+            - sqs
+
+    sms:
+        container_name: sms
+        environment:
+            - MYSQL_DATABASE=jdbc:mysql://mydb:3306/sms
+            - MYSQL_USER=root
+            - MYSQL_PASSWORD=local
+            - MYSQL_PORT=3306
+            - SQS_ENDPOINT=http://sqs:9324
+            - SQS_REGION=ap-southeast-1
+            - AWS_ACCESS_KEY_ID=awskey
+            - AWS_SECRET_KEY=awssecret
+        build:
+            context: ./sms
+            dockerfile: ./Dockerfile
+        image: sms:1.0
+        ports:
+            - 8090:8090
+        networks:
+            - nab_hungphan
+        depends_on:
+            - sqs
 
     redis:
         image: redis:5.0-alpine
@@ -68,7 +94,7 @@ services:
         environment:
             - REDIS_REPLICATION_MODE=master
         ports:
-            - "6379:6379"
+            - 6379:6379
         networks:
             - nab_hungphan
 

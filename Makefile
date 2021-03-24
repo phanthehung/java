@@ -2,7 +2,7 @@ include .env
 
 build:
 	docker network create -d bridge nab_hungphan || true
-	docker-compose up --build
+	docker-compose build
 
 run:
 	docker-compose up

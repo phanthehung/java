@@ -1,29 +1,31 @@
-package com.example.purchase.boundedcontext.purchase.domain;
+package com.example.purchase.boundedcontext.purchase.application;
 
+import com.example.purchase.Util.UniqueStringGenerator;
+import com.example.purchase.boundedcontext.purchase.domain.PurchaseRepositoryInterface;
 import com.example.purchase.boundedcontext.purchase.domain.entity.Purchase;
 import com.example.purchase.boundedcontext.purchase.exception.InvalidStateTransitionException;
 import com.example.purchase.boundedcontext.purchase.exception.VoucherCreationException;
 import com.example.purchase.boundedcontext.purchase.exception.VoucherProcessingException;
-import org.springframework.transaction.annotation.Transactional;
 
 import java.util.List;
 
 public class PurchaseService implements PurchaseServiceInterface {
 
     private PurchaseRepositoryInterface purchaseRepository;
+
     private VoucherServiceInterface voucherService;
 
-    public PurchaseService() {
-    }
+    private UniqueStringGenerator generator;
 
-    public PurchaseService(PurchaseRepositoryInterface purchaseRepository, VoucherServiceInterface voucherService) {
+    public PurchaseService(PurchaseRepositoryInterface purchaseRepository, VoucherServiceInterface voucherService, UniqueStringGenerator generator) {
         this.purchaseRepository = purchaseRepository;
         this.voucherService = voucherService;
+        this.generator = generator;
     }
 
     @Override
     public String createPurchase(String phoneNumber, String creditCardNumber, double amount) {
-        String transaction = String.valueOf(System.currentTimeMillis());
+        String transaction = generator.generateString(30);
         Purchase purchase = new Purchase(phoneNumber, transaction, creditCardNumber, amount, Purchase.Status.pending);
         purchaseRepository.persistPurchase(purchase);
         return transaction;
@@ -50,7 +52,6 @@ public class PurchaseService implements PurchaseServiceInterface {
     }
 
     @Override
-    @Transactional
     public String createVoucher(String transaction) throws InvalidStateTransitionException, VoucherCreationException, VoucherProcessingException {
         Purchase purchase = purchaseRepository.getPurchaseInfo(transaction);
         try {

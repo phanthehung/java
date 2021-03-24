@@ -7,11 +7,10 @@ import com.example.voucher.boundedcontext.voucher.application.VoucherServiceInte
 import com.example.voucher.boundedcontext.shared.messagequeue.MessageQueueInterface;
 import com.example.voucher.boundedcontext.voucher.domain.VoucherProviderInterface;
 import com.example.voucher.boundedcontext.voucher.domain.VoucherRepositoryInterface;
-import com.example.voucher.boundedcontext.voucher.domain.VoucherService;
+import com.example.voucher.boundedcontext.voucher.application.VoucherService;
 import com.example.voucher.boundedcontext.voucher.infrastructure.MockVoucherProvider;
 import com.example.voucher.boundedcontext.shared.messagequeue.SqsMessageQueue;
 import com.example.voucher.boundedcontext.voucher.infrastructure.VoucherRepository;
-import com.google.gson.Gson;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.context.ApplicationEventPublisher;
 import org.springframework.context.annotation.Bean;
@@ -63,7 +62,7 @@ public class BeanConfig {
 
     @Bean
     public SmsInterface smsService() {
-        return new MockSmsService();
+        return new MockSmsService(messageQueue());
     }
 }
 
